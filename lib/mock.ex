@@ -285,6 +285,26 @@ defmodule Mock do
     end
   end
 
+  defmacro setup_all_with_mocks(mocks, do: setup_all_block) do
+    quote do
+      setup_all do
+        mock_modules(unquote(mocks))
+
+        unquote(setup_all_block)
+      end
+    end
+  end
+
+  defmacro setup_all_with_mocks(mocks, context, do: setup_all_block) do
+    quote do
+      setup_all unquote(context) do
+        mock_modules(unquote(mocks))
+
+        unquote(setup_all_block)
+      end
+    end
+  end
+
   # Helper macro to mock modules. Intended to be called only within this module
   # but not defined as `defmacrop` due to the scope within which it's used.
   defmacro mock_modules(mocks) do
@@ -303,6 +323,7 @@ defmodule Mock do
         end
 
         unquote(__MODULE__)._install_mock(m, mock_fns)
+        IO.inspect "CHecking for #{inspect m}"
         assert :meck.validate(m) == true
 
         [ m | ms] |> Enum.uniq
